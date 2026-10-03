@@ -39,6 +39,20 @@ which may be an unsolicited notification (wrong values) or never arrive
 (blocks the event loop forever). `light.js` drains, then reads with timeout
 and matches the reply's feature/function bytes.
 
+## Knob-driven levels: required pattern (bit us twice)
+
+Fast knob turns made Lutron dimmers, and later the Litra, bounce up and down.
+Devices apply changes late and report stale/in-between values while settling,
+so stepping from the *reported* level goes backwards. Every level-type control
+(`lutron.js`, `light.js`, and any future one) must:
+
+1. Step from the last **commanded** value; treat it as truth for a ~1.5 s hold window
+   (ignore device reports / skip reads), then re-read to pick up external changes.
+2. Keep the level as an unrounded float; round only when sending (per-step rounding drifts).
+3. Compute absolute targets, then write: retries must be idempotent (never re-apply a step).
+4. Serialize actions per device; coalesce sends (newest value wins).
+5. Add a fake-device test where writes land late; a fast spin must be monotonic and exact.
+
 ## Libraries
 
 - `loupedeck` (MIT) – CT protocol
