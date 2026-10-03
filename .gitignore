@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Runtime data: personal config, logs, uploaded icons, Lutron pairing certificate
+backend/data/
+
+# Project-management notes (personal); keep only the dev/architecture docs
+.0/*
+!.0/DOCS_DEV/
+
+# Local test output
+testing/test_results/
+
+# Scratch
+*.tmp.mjs
+*.log

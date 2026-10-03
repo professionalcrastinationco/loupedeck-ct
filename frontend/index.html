@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Loupedeck CT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap">
+    <link rel="stylesheet" href="vendor/pico.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+    <strong class="brand">Loupedeck CT</strong>
+    <span id="status" class="pill">…</span>
+    <span id="fg" class="muted small"></span>
+    <span class="spacer"></span>
+    <span id="saveState" class="muted small"></span>
+    <button id="undoBtn" class="outline secondary small-btn" title="Undo (Ctrl+Z)">Undo</button>
+    <button id="reconnectBtn" class="outline secondary small-btn">Reconnect</button>
+</header>
+
+<nav class="tabs" id="tabs">
+    <button data-tab="layout" class="active">Layout</button>
+    <button data-tab="apps">App rules</button>
+    <button data-tab="settings">Settings</button>
+    <button data-tab="json">Raw JSON</button>
+    <button data-tab="log">Live log</button>
+</nav>
+
+<main>
+    <section data-panel="layout" class="layout-panel">
+        <div class="pages-bar">
+            <div id="pageList" class="page-list"></div>
+            <button id="addPage" class="outline small-btn">+ Page</button>
+        </div>
+
+        <div class="workspace">
+            <div class="device-col">
+                <div class="device" id="device">
+                    <div class="screen-row">
+                        <div class="knob-col" id="knobsLeft"></div>
+                        <div class="strip" data-sel="strip:left"><img id="stripLeft" alt=""></div>
+                        <div class="keys" id="keys"></div>
+                        <div class="strip" data-sel="strip:right"><img id="stripRight" alt=""></div>
+                        <div class="knob-col" id="knobsRight"></div>
+                    </div>
+                    <div class="round-row" id="roundButtons"></div>
+                    <div class="lower">
+                        <div class="square-grid" id="squareLeft"></div>
+                        <div class="wheel" data-sel="wheel"><img id="wheelImg" alt=""></div>
+                        <div class="square-grid" id="squareRight"></div>
+                    </div>
+                </div>
+                <label class="follow"><input type="checkbox" id="follow" checked> Select controls when I press them on the device</label>
+                <div class="page-meta" id="pageMeta"></div>
+            </div>
+
+            <aside class="editor" id="editor">
+                <p class="muted">Click a key, knob, button or the wheel to edit it. Or just press it on the device.</p>
+            </aside>
+        </div>
+    </section>
+
+    <section data-panel="apps" hidden>
+        <h3>Automatic page switching</h3>
+        <p class="muted">When the focused app matches a rule, the deck jumps to that page and returns when you leave. Pick a page manually to override until you switch apps.</p>
+        <label><input type="checkbox" id="autoSwitch" role="switch"> Enabled</label>
+        <p class="small">Currently focused: <code id="fgNow">-</code> <button id="addFromFg" class="outline small-btn">+ Rule for this app</button></p>
+        <table class="rules">
+            <thead><tr><th>Process (exe)</th><th>Window title regex (optional)</th><th>Page</th><th></th></tr></thead>
+            <tbody id="rulesBody"></tbody>
+        </table>
+        <button id="addRule" class="outline small-btn">+ Rule</button>
+    </section>
+
+    <section data-panel="settings" hidden>
+        <h3>Device</h3>
+        <div class="grid">
+            <label>Default brightness <input type="range" min="0.1" max="1" step="0.05" id="brightness"></label>
+            <label>Start page <select id="startPage"></select></label>
+        </div>
+        <label><input type="checkbox" role="switch" id="haptics"> Haptic feedback</label>
+        <label><input type="checkbox" role="switch" id="swipePages"> Swipe the screen left/right to change pages</label>
+        <h3>Lutron</h3>
+        <div id="lutronBox" class="integration"></div>
+        <h3>Theme</h3>
+        <div class="grid theme-grid" id="themeGrid"></div>
+        <h3>Device status</h3>
+        <pre id="statusJson" class="small"></pre>
+    </section>
+
+    <section data-panel="json" hidden>
+        <p class="muted">Full config. Saved to <code>backend/data/config.json</code> (previous version kept as <code>.bak</code>). You can also edit that file directly; changes hot-reload.</p>
+        <textarea id="jsonText" spellcheck="false"></textarea>
+        <button id="jsonSave">Apply JSON</button>
+    </section>
+
+    <section data-panel="log" hidden>
+        <div class="grid">
+            <div><h4>Device input</h4><pre id="inputLog" class="log"></pre></div>
+            <div><h4>Daemon log</h4><pre id="daemonLog" class="log"></pre></div>
+        </div>
+    </section>
+</main>
+
+<div id="toast" class="toast" hidden></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

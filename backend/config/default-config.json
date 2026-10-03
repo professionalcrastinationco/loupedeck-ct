@@ -1,0 +1,1203 @@
+{
+  "version": 1,
+  "brightness": 0.8,
+  "haptics": true,
+  "swipePages": true,
+  "autoSwitch": true,
+  "startPage": "home",
+  "theme": {
+    "background": "#000000",
+    "key": "#1f2937",
+    "text": "#f8fafc",
+    "accent": "#38bdf8",
+    "active": "#dc2626"
+  },
+  "appRules": [
+    {
+      "title": "Onshape",
+      "page": "onshape"
+    },
+    {
+      "exe": "figma.exe",
+      "page": "figma"
+    },
+    {
+      "title": "[–-] Figma( - |$)",
+      "page": "figma"
+    },
+    {
+      "exe": "windowsterminal.exe",
+      "page": "terminal"
+    }
+  ],
+  "global": {
+    "knobs": {
+      "knobTL": {
+        "label": "Volume",
+        "icon": "🔊",
+        "widget": {
+          "type": "volume",
+          "target": "speakers"
+        },
+        "rotate": {
+          "type": "volume",
+          "target": "speakers",
+          "step": 0.02
+        },
+        "press": {
+          "type": "mute",
+          "target": "speakers"
+        }
+      },
+      "knobCL": {
+        "label": "Mic",
+        "icon": "🎤",
+        "widget": {
+          "type": "volume",
+          "target": "mic"
+        },
+        "rotate": {
+          "type": "volume",
+          "target": "mic",
+          "step": 0.02
+        },
+        "press": {
+          "type": "mute",
+          "target": "mic"
+        }
+      },
+      "knobBL": {
+        "label": "Scroll",
+        "icon": "↕",
+        "rotate": {
+          "type": "scroll",
+          "amount": -1
+        }
+      },
+      "knobTR": {
+        "label": "Tracks",
+        "icon": "🎵",
+        "left": {
+          "type": "media",
+          "key": "prev"
+        },
+        "right": {
+          "type": "media",
+          "key": "next"
+        },
+        "press": {
+          "type": "media",
+          "key": "playpause"
+        }
+      },
+      "knobCR": {
+        "label": "H-Scroll",
+        "icon": "↔",
+        "rotate": {
+          "type": "scroll",
+          "amount": 1,
+          "horizontal": true
+        }
+      },
+      "knobBR": {
+        "label": "Light",
+        "icon": "💡",
+        "widget": {
+          "type": "light"
+        },
+        "rotate": {
+          "type": "light",
+          "op": "brightness",
+          "step": 0.05
+        },
+        "press": {
+          "type": "light",
+          "op": "toggle"
+        },
+        "activeColor": "#f59e0b"
+      }
+    },
+    "wheel": {
+      "label": "Scroll",
+      "rotate": {
+        "type": "scroll",
+        "amount": -1
+      },
+      "sensitivity": 1,
+      "press": {
+        "type": "page",
+        "page": "next"
+      }
+    },
+    "buttons": {
+      "0": {
+        "label": "Home",
+        "action": {
+          "type": "page",
+          "page": "home"
+        }
+      },
+      "1": {
+        "label": "Media",
+        "action": {
+          "type": "page",
+          "page": "media"
+        }
+      },
+      "2": {
+        "label": "Edit",
+        "action": {
+          "type": "page",
+          "page": "edit"
+        }
+      },
+      "3": {
+        "label": "Windows",
+        "action": {
+          "type": "page",
+          "page": "windows"
+        }
+      },
+      "6": {
+        "label": "Light",
+        "color": "#000000",
+        "activeColor": "#f59e0b",
+        "widget": {
+          "type": "light"
+        },
+        "action": {
+          "type": "light",
+          "op": "toggle"
+        }
+      },
+      "7": {
+        "label": "Mic mute",
+        "color": "#16a34a",
+        "activeColor": "#dc2626",
+        "widget": {
+          "type": "mute",
+          "target": "mic"
+        },
+        "action": {
+          "type": "mute",
+          "target": "mic"
+        }
+      },
+      "home": {
+        "label": "Home page",
+        "action": {
+          "type": "page",
+          "page": "home"
+        }
+      },
+      "undo": {
+        "label": "Undo",
+        "action": {
+          "type": "hotkey",
+          "keys": "ctrl+z"
+        },
+        "longPress": {
+          "type": "hotkey",
+          "keys": "ctrl+y"
+        }
+      },
+      "save": {
+        "label": "Save",
+        "action": {
+          "type": "hotkey",
+          "keys": "ctrl+s"
+        }
+      },
+      "enter": {
+        "label": "Enter",
+        "action": {
+          "type": "hotkey",
+          "keys": "enter"
+        }
+      },
+      "keyboard": {
+        "label": "Emoji panel",
+        "action": {
+          "type": "hotkey",
+          "keys": "win+."
+        }
+      }
+    }
+  },
+  "pages": [
+    {
+      "id": "home",
+      "name": "Home",
+      "color": "#38bdf8",
+      "keys": {
+        "0": {
+          "widget": {
+            "type": "clock"
+          },
+          "color": "#0f172a"
+        },
+        "1": {
+          "widget": {
+            "type": "cpu"
+          },
+          "color": "#0f172a"
+        },
+        "2": {
+          "widget": {
+            "type": "memory"
+          },
+          "color": "#0f172a"
+        },
+        "3": {
+          "label": "Mic",
+          "widget": {
+            "type": "mute",
+            "target": "mic"
+          },
+          "color": "#166534",
+          "activeColor": "#b91c1c",
+          "action": {
+            "type": "mute",
+            "target": "mic"
+          }
+        },
+        "4": {
+          "icon": "📁",
+          "label": "Explorer",
+          "color": "#a16207",
+          "action": {
+            "type": "hotkey",
+            "keys": "win+e"
+          }
+        },
+        "5": {
+          "icon": "⌨",
+          "label": "Terminal",
+          "color": "#334155",
+          "action": {
+            "type": "open",
+            "target": "wt"
+          }
+        },
+        "6": {
+          "icon": "🌐",
+          "label": "Browser",
+          "color": "#1d4ed8",
+          "action": {
+            "type": "open",
+            "target": "https://www.google.com"
+          }
+        },
+        "7": {
+          "label": "Light",
+          "widget": {
+            "type": "light"
+          },
+          "color": "#334155",
+          "activeColor": "#d97706",
+          "action": {
+            "type": "light",
+            "op": "toggle"
+          },
+          "longPress": {
+            "type": "light",
+            "op": "brightness",
+            "set": 1
+          }
+        },
+        "8": {
+          "icon": "✂",
+          "label": "Snip",
+          "color": "#7c3aed",
+          "action": {
+            "type": "hotkey",
+            "keys": "win+shift+s"
+          }
+        },
+        "9": {
+          "icon": "📊",
+          "label": "Task Mgr",
+          "color": "#0e7490",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+shift+esc"
+          }
+        },
+        "10": {
+          "icon": "🖥",
+          "label": "Desktop",
+          "color": "#374151",
+          "action": {
+            "type": "hotkey",
+            "keys": "win+d"
+          }
+        },
+        "11": {
+          "icon": "🔒",
+          "label": "Lock",
+          "color": "#991b1b",
+          "longPress": {
+            "type": "hotkey",
+            "keys": "win+l"
+          },
+          "action": {
+            "type": "haptic",
+            "pattern": "SHORT"
+          }
+        }
+      }
+    },
+    {
+      "id": "media",
+      "name": "Media",
+      "color": "#22c55e",
+      "keys": {
+        "0": {
+          "icon": "⏮",
+          "label": "Prev",
+          "color": "#14532d",
+          "action": {
+            "type": "media",
+            "key": "prev"
+          }
+        },
+        "1": {
+          "icon": "⏯",
+          "label": "Play/Pause",
+          "color": "#15803d",
+          "action": {
+            "type": "media",
+            "key": "playpause"
+          }
+        },
+        "2": {
+          "icon": "⏭",
+          "label": "Next",
+          "color": "#14532d",
+          "action": {
+            "type": "media",
+            "key": "next"
+          }
+        },
+        "3": {
+          "label": "Speakers",
+          "widget": {
+            "type": "volume",
+            "target": "speakers"
+          },
+          "color": "#1e293b",
+          "action": {
+            "type": "mute",
+            "target": "speakers"
+          }
+        },
+        "4": {
+          "icon": "🔉",
+          "label": "Vol 20%",
+          "color": "#334155",
+          "action": {
+            "type": "volume",
+            "target": "speakers",
+            "set": 0.2
+          }
+        },
+        "5": {
+          "icon": "🔊",
+          "label": "Vol 50%",
+          "color": "#334155",
+          "action": {
+            "type": "volume",
+            "target": "speakers",
+            "set": 0.5
+          }
+        },
+        "6": {
+          "icon": "📢",
+          "label": "Vol 80%",
+          "color": "#334155",
+          "action": {
+            "type": "volume",
+            "target": "speakers",
+            "set": 0.8
+          }
+        },
+        "7": {
+          "label": "Mic",
+          "widget": {
+            "type": "mute",
+            "target": "mic"
+          },
+          "color": "#166534",
+          "activeColor": "#b91c1c",
+          "action": {
+            "type": "mute",
+            "target": "mic"
+          }
+        },
+        "8": {
+          "icon": "⏹",
+          "label": "Stop",
+          "color": "#3f3f46",
+          "action": {
+            "type": "media",
+            "key": "stop"
+          }
+        },
+        "9": {
+          "icon": "🔈",
+          "label": "Sound",
+          "color": "#3f3f46",
+          "action": {
+            "type": "open",
+            "target": "ms-settings:sound"
+          }
+        },
+        "10": {
+          "icon": "🎧",
+          "label": "Mixer",
+          "color": "#3f3f46",
+          "action": {
+            "type": "open",
+            "target": "ms-settings:apps-volume"
+          }
+        }
+      },
+      "wheel": {
+        "label": "Volume",
+        "widget": {
+          "type": "volume",
+          "target": "speakers"
+        },
+        "rotate": {
+          "type": "volume",
+          "target": "speakers",
+          "step": 0.01
+        },
+        "press": {
+          "type": "media",
+          "key": "playpause"
+        }
+      }
+    },
+    {
+      "id": "edit",
+      "name": "Edit",
+      "color": "#f59e0b",
+      "keys": {
+        "0": {
+          "icon": "📋",
+          "label": "Copy",
+          "color": "#78350f",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+c"
+          }
+        },
+        "1": {
+          "icon": "📥",
+          "label": "Paste",
+          "color": "#78350f",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+v"
+          }
+        },
+        "2": {
+          "icon": "✂",
+          "label": "Cut",
+          "color": "#78350f",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+x"
+          }
+        },
+        "3": {
+          "icon": "🗂",
+          "label": "Clipboard",
+          "color": "#92400e",
+          "action": {
+            "type": "hotkey",
+            "keys": "win+v"
+          }
+        },
+        "4": {
+          "icon": "↶",
+          "label": "Undo",
+          "color": "#334155",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+z"
+          }
+        },
+        "5": {
+          "icon": "↷",
+          "label": "Redo",
+          "color": "#334155",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+y"
+          }
+        },
+        "6": {
+          "icon": "🔍",
+          "label": "Find",
+          "color": "#334155",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+f"
+          }
+        },
+        "7": {
+          "icon": "▦",
+          "label": "Select All",
+          "color": "#334155",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+a"
+          }
+        },
+        "8": {
+          "icon": "➕",
+          "label": "New Tab",
+          "color": "#1e3a8a",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+t"
+          }
+        },
+        "9": {
+          "icon": "✖",
+          "label": "Close Tab",
+          "color": "#1e3a8a",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+w"
+          }
+        },
+        "10": {
+          "icon": "↺",
+          "label": "Reopen Tab",
+          "color": "#1e3a8a",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+shift+t"
+          }
+        },
+        "11": {
+          "icon": "💾",
+          "label": "Save",
+          "color": "#065f46",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+s"
+          }
+        }
+      },
+      "wheel": {
+        "label": "Undo / Redo",
+        "left": {
+          "type": "hotkey",
+          "keys": "ctrl+z"
+        },
+        "right": {
+          "type": "hotkey",
+          "keys": "ctrl+y"
+        },
+        "sensitivity": 1
+      }
+    },
+    {
+      "id": "windows",
+      "name": "Windows",
+      "color": "#a855f7",
+      "keys": {
+        "0": {
+          "icon": "⇤",
+          "label": "Snap Left",
+          "color": "#3b0764",
+          "action": {
+            "type": "hotkey",
+            "keys": "win+left"
+          }
+        },
+        "1": {
+          "icon": "⬆",
+          "label": "Maximize",
+          "color": "#3b0764",
+          "action": {
+            "type": "hotkey",
+            "keys": "win+up"
+          }
+        },
+        "2": {
+          "icon": "⇥",
+          "label": "Snap Right",
+          "color": "#3b0764",
+          "action": {
+            "type": "hotkey",
+            "keys": "win+right"
+          }
+        },
+        "3": {
+          "icon": "⬇",
+          "label": "Minimize",
+          "color": "#3b0764",
+          "action": {
+            "type": "hotkey",
+            "keys": "win+down"
+          }
+        },
+        "4": {
+          "icon": "🗔",
+          "label": "Task View",
+          "color": "#4c1d95",
+          "action": {
+            "type": "hotkey",
+            "keys": "win+tab"
+          }
+        },
+        "5": {
+          "icon": "◧",
+          "label": "Snap Layouts",
+          "color": "#4c1d95",
+          "action": {
+            "type": "hotkey",
+            "keys": "win+z"
+          }
+        },
+        "6": {
+          "icon": "⇄",
+          "label": "Next Monitor",
+          "color": "#4c1d95",
+          "action": {
+            "type": "hotkey",
+            "keys": "win+shift+right"
+          }
+        },
+        "7": {
+          "icon": "✖",
+          "label": "Close App",
+          "color": "#7f1d1d",
+          "longPress": {
+            "type": "hotkey",
+            "keys": "alt+f4"
+          },
+          "action": {
+            "type": "haptic",
+            "pattern": "SHORT"
+          }
+        },
+        "8": {
+          "icon": "◀",
+          "label": "Prev Desktop",
+          "color": "#312e81",
+          "action": {
+            "type": "hotkey",
+            "keys": "win+ctrl+left"
+          }
+        },
+        "9": {
+          "icon": "➕",
+          "label": "New Desktop",
+          "color": "#312e81",
+          "action": {
+            "type": "hotkey",
+            "keys": "win+ctrl+d"
+          }
+        },
+        "10": {
+          "icon": "▶",
+          "label": "Next Desktop",
+          "color": "#312e81",
+          "action": {
+            "type": "hotkey",
+            "keys": "win+ctrl+right"
+          }
+        },
+        "11": {
+          "icon": "🔔",
+          "label": "Notifications",
+          "color": "#312e81",
+          "action": {
+            "type": "hotkey",
+            "keys": "win+n"
+          }
+        }
+      },
+      "wheel": {
+        "label": "Switch window",
+        "left": {
+          "type": "hotkey",
+          "keys": "alt+shift+esc"
+        },
+        "right": {
+          "type": "hotkey",
+          "keys": "alt+esc"
+        }
+      }
+    },
+    {
+      "id": "figma",
+      "name": "Figma",
+      "color": "#f24e1e",
+      "keys": {
+        "0": {
+          "label": "Move",
+          "icon": "↖",
+          "color": "#7c2d12",
+          "action": {
+            "type": "hotkey",
+            "keys": "v"
+          }
+        },
+        "1": {
+          "label": "Frame",
+          "icon": "#",
+          "color": "#7c2d12",
+          "action": {
+            "type": "hotkey",
+            "keys": "f"
+          }
+        },
+        "2": {
+          "label": "Rectangle",
+          "icon": "▭",
+          "color": "#7c2d12",
+          "action": {
+            "type": "hotkey",
+            "keys": "r"
+          }
+        },
+        "3": {
+          "label": "Text",
+          "icon": "T",
+          "color": "#7c2d12",
+          "action": {
+            "type": "hotkey",
+            "keys": "t"
+          }
+        },
+        "4": {
+          "label": "Pen",
+          "icon": "✒",
+          "color": "#9a3412",
+          "action": {
+            "type": "hotkey",
+            "keys": "p"
+          }
+        },
+        "5": {
+          "label": "Component",
+          "icon": "❖",
+          "color": "#6d28d9",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+alt+k"
+          }
+        },
+        "6": {
+          "label": "Auto layout",
+          "icon": "☰",
+          "color": "#6d28d9",
+          "action": {
+            "type": "hotkey",
+            "keys": "shift+a"
+          }
+        },
+        "7": {
+          "label": "Group",
+          "icon": "▣",
+          "color": "#334155",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+g"
+          },
+          "longPress": {
+            "type": "hotkey",
+            "keys": "ctrl+shift+g"
+          }
+        },
+        "8": {
+          "label": "Zoom fit",
+          "icon": "⤢",
+          "color": "#1e3a8a",
+          "action": {
+            "type": "hotkey",
+            "keys": "shift+1"
+          }
+        },
+        "9": {
+          "label": "Zoom sel.",
+          "icon": "⌖",
+          "color": "#1e3a8a",
+          "action": {
+            "type": "hotkey",
+            "keys": "shift+2"
+          }
+        },
+        "10": {
+          "label": "Duplicate",
+          "icon": "⧉",
+          "color": "#334155",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+d"
+          }
+        },
+        "11": {
+          "label": "Hide UI",
+          "icon": "◐",
+          "color": "#334155",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+backslash"
+          }
+        }
+      },
+      "knobs": {
+        "knobBL": {
+          "label": "Zoom",
+          "icon": "🔍",
+          "left": {
+            "type": "hotkey",
+            "keys": "ctrl+-"
+          },
+          "right": {
+            "type": "hotkey",
+            "keys": "ctrl+="
+          },
+          "press": {
+            "type": "hotkey",
+            "keys": "shift+0"
+          }
+        },
+        "knobTR": {
+          "label": "Arrange",
+          "icon": "⇅",
+          "left": {
+            "type": "hotkey",
+            "keys": "ctrl+["
+          },
+          "right": {
+            "type": "hotkey",
+            "keys": "ctrl+]"
+          }
+        },
+        "knobCR": {
+          "label": "Layers",
+          "icon": "☷",
+          "left": {
+            "type": "hotkey",
+            "keys": "shift+tab"
+          },
+          "right": {
+            "type": "hotkey",
+            "keys": "tab"
+          },
+          "press": {
+            "type": "hotkey",
+            "keys": "enter"
+          }
+        }
+      }
+    },
+    {
+      "id": "onshape",
+      "name": "Onshape",
+      "color": "#0ea5e9",
+      "keys": {
+        "0": {
+          "label": "Sketch",
+          "icon": "✎",
+          "color": "#075985",
+          "action": {
+            "type": "hotkey",
+            "keys": "shift+s"
+          }
+        },
+        "1": {
+          "label": "Extrude",
+          "icon": "⬆",
+          "color": "#075985",
+          "action": {
+            "type": "hotkey",
+            "keys": "shift+e"
+          }
+        },
+        "2": {
+          "label": "Revolve",
+          "icon": "⟳",
+          "color": "#075985",
+          "action": {
+            "type": "hotkey",
+            "keys": "shift+w"
+          }
+        },
+        "3": {
+          "label": "Fillet",
+          "icon": "◜",
+          "color": "#075985",
+          "action": {
+            "type": "hotkey",
+            "keys": "shift+f"
+          }
+        },
+        "4": {
+          "label": "Line",
+          "icon": "╱",
+          "color": "#155e75",
+          "action": {
+            "type": "hotkey",
+            "keys": "l"
+          }
+        },
+        "5": {
+          "label": "Rectangle",
+          "icon": "▭",
+          "color": "#155e75",
+          "action": {
+            "type": "hotkey",
+            "keys": "r"
+          }
+        },
+        "6": {
+          "label": "Circle",
+          "icon": "◯",
+          "color": "#155e75",
+          "action": {
+            "type": "hotkey",
+            "keys": "c"
+          }
+        },
+        "7": {
+          "label": "Dimension",
+          "icon": "↔",
+          "color": "#155e75",
+          "action": {
+            "type": "hotkey",
+            "keys": "d"
+          }
+        },
+        "8": {
+          "label": "Fit",
+          "icon": "⤢",
+          "color": "#334155",
+          "action": {
+            "type": "hotkey",
+            "keys": "f"
+          }
+        },
+        "9": {
+          "label": "Normal to",
+          "icon": "⊥",
+          "color": "#334155",
+          "action": {
+            "type": "hotkey",
+            "keys": "n"
+          }
+        },
+        "10": {
+          "label": "Isometric",
+          "icon": "⬡",
+          "color": "#334155",
+          "action": {
+            "type": "hotkey",
+            "keys": "shift+7"
+          }
+        },
+        "11": {
+          "label": "Construction",
+          "icon": "┄",
+          "color": "#334155",
+          "action": {
+            "type": "hotkey",
+            "keys": "q"
+          }
+        }
+      },
+      "knobs": {
+        "knobBL": {
+          "label": "Zoom",
+          "icon": "🔍",
+          "rotate": {
+            "type": "scroll",
+            "amount": 1
+          }
+        },
+        "knobTR": {
+          "label": "Undo/Redo",
+          "icon": "↶",
+          "left": {
+            "type": "hotkey",
+            "keys": "ctrl+z"
+          },
+          "right": {
+            "type": "hotkey",
+            "keys": "ctrl+y"
+          }
+        },
+        "knobCR": {
+          "label": "Esc / OK",
+          "icon": "⏎",
+          "press": {
+            "type": "hotkey",
+            "keys": "enter"
+          },
+          "left": {
+            "type": "hotkey",
+            "keys": "esc"
+          },
+          "right": {
+            "type": "hotkey",
+            "keys": "enter"
+          }
+        }
+      }
+    },
+    {
+      "id": "terminal",
+      "name": "Terminal",
+      "color": "#22c55e",
+      "keys": {
+        "0": {
+          "label": "New tab",
+          "icon": "➕",
+          "color": "#14532d",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+shift+t"
+          }
+        },
+        "1": {
+          "label": "Close tab",
+          "icon": "✖",
+          "color": "#14532d",
+          "action": {
+            "type": "haptic",
+            "pattern": "SHORT"
+          },
+          "longPress": {
+            "type": "hotkey",
+            "keys": "ctrl+shift+w"
+          }
+        },
+        "2": {
+          "label": "Split right",
+          "icon": "◫",
+          "color": "#166534",
+          "action": {
+            "type": "hotkey",
+            "keys": "alt+shift+="
+          }
+        },
+        "3": {
+          "label": "Split down",
+          "icon": "⬓",
+          "color": "#166534",
+          "action": {
+            "type": "hotkey",
+            "keys": "alt+shift+-"
+          }
+        },
+        "4": {
+          "label": "Prev tab",
+          "icon": "◀",
+          "color": "#334155",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+shift+tab"
+          }
+        },
+        "5": {
+          "label": "Next tab",
+          "icon": "▶",
+          "color": "#334155",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+tab"
+          }
+        },
+        "6": {
+          "label": "Find",
+          "icon": "🔍",
+          "color": "#334155",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+shift+f"
+          }
+        },
+        "7": {
+          "label": "Ctrl+C",
+          "icon": "⛔",
+          "color": "#7f1d1d",
+          "action": {
+            "type": "hotkey",
+            "keys": "ctrl+c"
+          }
+        },
+        "8": {
+          "label": "git status",
+          "icon": "⎇",
+          "color": "#1e293b",
+          "action": {
+            "type": "type",
+            "text": "git status\n"
+          }
+        },
+        "9": {
+          "label": "git pull",
+          "icon": "⇣",
+          "color": "#1e293b",
+          "action": {
+            "type": "type",
+            "text": "git pull\n"
+          }
+        },
+        "10": {
+          "label": "claude",
+          "icon": "✳",
+          "color": "#9a3412",
+          "action": {
+            "type": "type",
+            "text": "claude\n"
+          }
+        },
+        "11": {
+          "label": "herdr",
+          "icon": "▤",
+          "color": "#0f766e",
+          "action": {
+            "type": "type",
+            "text": "herdr\n"
+          }
+        }
+      },
+      "knobs": {
+        "knobTR": {
+          "label": "Tabs",
+          "icon": "⇆",
+          "left": {
+            "type": "hotkey",
+            "keys": "ctrl+shift+tab"
+          },
+          "right": {
+            "type": "hotkey",
+            "keys": "ctrl+tab"
+          }
+        },
+        "knobCR": {
+          "label": "Panes",
+          "icon": "◫",
+          "left": {
+            "type": "hotkey",
+            "keys": "alt+left"
+          },
+          "right": {
+            "type": "hotkey",
+            "keys": "alt+right"
+          }
+        }
+      }
+    }
+  ]
+}
