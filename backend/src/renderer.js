@@ -5,6 +5,7 @@
 //   wheel:  240x240 round display in the jog wheel
 import fs from 'node:fs'
 import path from 'node:path'
+import { createRequire } from 'node:module'
 import { loadImage } from 'canvas'
 import { ICONS_DIR } from './paths.js'
 import { log } from './log.js'
@@ -12,13 +13,29 @@ import { log } from './log.js'
 const FONT = '"Segoe UI", Arial, sans-serif'
 const ICON_FONT = '"Segoe UI Emoji", "Segoe UI Symbol", sans-serif'
 
-const images = new Map() // file -> Image | null (failed)
+const images = new Map() // file or phosphor ref -> Image | null (failed)
+const require = createRequire(import.meta.url)
 
-export async function preloadImages(files) {
-    await Promise.all([...new Set(files)].filter(f => f && !images.has(f)).map(async f => {
-        const full = path.isAbsolute(f) ? f : path.join(ICONS_DIR, f)
+// Phosphor icons (phosphoricons.com) are tinted to the key's text color, so the ref includes it
+export function imageRef(def, theme) {
+    if (def?.image) return def.image
+    if (!def?.phosphor) return null
+    return `phosphor:${def.phosphorWeight || 'fill'}:${def.phosphor}:${def.textColor || theme.text}`
+}
+
+async function readImage(ref) {
+    if (!ref.startsWith('phosphor:')) return loadImage(fs.readFileSync(path.isAbsolute(ref) ? ref : path.join(ICONS_DIR, ref)))
+    const [, weight, name, color] = ref.split(':')
+    if (!/^[a-z0-9-]+$/.test(name) || !/^[a-z]+$/.test(weight)) throw new Error('bad Phosphor icon name')
+    const file = require.resolve(`@phosphor-icons/core/${weight}/${weight === 'regular' ? name : `${name}-${weight}`}.svg`)
+    const svg = fs.readFileSync(file, 'utf8').replace('fill="currentColor"', `fill="${color}" width="256" height="256"`)
+    return loadImage(Buffer.from(svg))
+}
+
+export async function preloadImages(refs) {
+    await Promise.all([...new Set(refs)].filter(f => f && !images.has(f)).map(async f => {
         try {
-            images.set(f, await loadImage(fs.readFileSync(full)))
+            images.set(f, await readImage(f))
         } catch (err) {
             log.warn(`Icon "${f}" failed to load: ${err.message}`)
             images.set(f, null)
@@ -85,7 +102,8 @@ export function drawKey(ctx, w, h, { def, value, pressed, theme }) {
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     const cx = w / 2
-    const img = def.image ? images.get(def.image) : null
+    const ref = imageRef(def, theme)
+    const img = ref ? images.get(ref) : null
     const hasLabel = !!def.label
 
     if (value && value.text !== undefined && !def.icon && !img) {
@@ -110,9 +128,10 @@ export function drawKey(ctx, w, h, { def, value, pressed, theme }) {
         return
     }
 
-    // Icon + label layout
-    const iconY = hasLabel ? h / 2 - 10 : h / 2
-    const iconSize = hasLabel ? 36 : 46
+    // Icon + label layout, plus a level bar for widgets that report one (dimmers)
+    const hasBar = typeof value?.level === 'number'
+    const iconY = hasLabel ? h / 2 - (hasBar ? 15 : 11) : h / 2
+    const iconSize = hasLabel ? (hasBar ? 32 : 36) : 46
     if (img) {
         const s = def.imageScale ?? iconSize
         const ratio = Math.min(s / img.width, s / img.height)
@@ -123,7 +142,8 @@ export function drawKey(ctx, w, h, { def, value, pressed, theme }) {
         ctx.fillText(def.icon, cx, iconY + 2)
     }
     if (hasLabel) {
-        const label = value?.text !== undefined ? `${def.label} ${value.text}` : def.label
+        // hideValue: the icon + background color already show the state, so skip "ON"/"OFF"
+        const label = value?.text !== undefined && !def.hideValue ? `${def.label} ${value.text}` : def.label
         if (!img && !def.icon) {
             const lines = wrapLabel(ctx, label, w - 14, 16)
             lines.forEach((line, i) => {
@@ -132,8 +152,15 @@ export function drawKey(ctx, w, h, { def, value, pressed, theme }) {
             })
         } else {
             fitText(ctx, label, w - 12, 13)
-            ctx.fillText(label, cx, h - 17)
+            ctx.fillText(label, cx, h - (hasBar ? 32 : 24))
         }
+    }
+    if (hasBar && (img || def.icon)) {
+        const bw = w - 24, by = h - 21
+        ctx.fillStyle = 'rgba(255,255,255,0.18)'
+        roundRect(ctx, 12, by, bw, 5, 2.5); ctx.fill()
+        ctx.fillStyle = fg
+        roundRect(ctx, 12, by, Math.max(5, bw * Math.min(1, value.level)), 5, 2.5); ctx.fill()
     }
 }
 

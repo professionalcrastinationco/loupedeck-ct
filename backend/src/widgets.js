@@ -6,6 +6,7 @@ import * as win from './win32.js'
 import { log } from './log.js'
 import { getLightState } from './light.js'
 import { lutron } from './lutron.js'
+import { ha } from './ha.js'
 
 const pct = v => `${Math.round(v * 100)}%`
 
@@ -104,6 +105,15 @@ export class WidgetEngine {
                 if (z.level === null) return { text: '…', sub: z.name }
                 if (z.type === 'Switched') return { text: on ? 'ON' : 'OFF', sub: z.name, active: on }
                 return { text: on ? `${z.level}%` : 'OFF', sub: z.name, level: on ? z.level / 100 : undefined, active: on }
+            }
+            case 'ha': {
+                const e = ha.entity(w.entity)
+                if (!e) return { text: ha.state === 'connected' ? '?' : 'n/a', sub: 'Home Assistant' }
+                if (e.state === 'unavailable' || e.state === 'unknown') return { text: '—', sub: e.name }
+                const on = e.state === 'on'
+                if (e.dimmable) return { text: on ? `${e.level}%` : 'OFF', sub: e.name, level: on ? e.level / 100 : undefined, active: on }
+                if (e.domain === 'script' || e.domain === 'scene') return { text: on ? 'RUNNING' : '', sub: e.name, active: on }
+                return { text: on ? 'ON' : 'OFF', sub: e.name, active: on }
             }
             case 'toggle': {
                 const on = !!this.controller.toggles[w.id]

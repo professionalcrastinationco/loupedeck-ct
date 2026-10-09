@@ -11,12 +11,13 @@ import { log } from './log.js'
 import { runAction, ACTION_TYPES } from './actions.js'
 import { KEY_NAMES } from './win32.js'
 import { KNOB_IDS, ROUND_BUTTONS, SQUARE_BUTTONS } from './config.js'
-import { drawKey, drawStrip, drawWheel, preloadImages } from './renderer.js'
+import { drawKey, drawStrip, drawWheel, preloadImages, imageRef } from './renderer.js'
 import { lutron } from './lutron.js'
+import { ha } from './ha.js'
 import { discoverBridges, pairBridge } from './lutron-pair.js'
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.json': 'application/json', '.webp': 'image/webp', '.gif': 'image/gif' }
-const WIDGET_TYPES = ['clock', 'date', 'cpu', 'memory', 'volume', 'mute', 'light', 'lutron', 'toggle', 'page', 'command', 'http']
+const WIDGET_TYPES = ['clock', 'date', 'cpu', 'memory', 'volume', 'mute', 'light', 'lutron', 'ha', 'toggle', 'page', 'command', 'http']
 
 export function startServer({ port, controller, store }) {
     const allowedHosts = new Set([`127.0.0.1:${port}`, `localhost:${port}`])
@@ -67,7 +68,7 @@ export function startServer({ port, controller, store }) {
         let canvas
         if (kind === 'key') {
             const def = page?.keys?.[idx]
-            if (def?.image) await preloadImages([def.image])
+            await preloadImages([imageRef(def, theme)])
             canvas = createCanvas(90, 90)
             drawKey(canvas.getContext('2d'), 90, 90, { def, value: val(def), pressed: false, theme })
         } else if (kind === 'strip') {
@@ -115,6 +116,12 @@ export function startServer({ port, controller, store }) {
                 lutron.unpair()
                 return send(res, 200, { ok: true })
             }
+            if (req.method === 'GET' && p === '/api/ha') return send(res, 200, ha.list())
+            if (req.method === 'POST' && p === '/api/ha/settings') {
+                try { ha.saveSettings(await readJson(req)) } catch (err) { return send(res, 400, { error: err.message }) }
+                return send(res, 200, { ok: true })
+            }
+            if (req.method === 'POST' && p === '/api/ha/forget') { ha.forget(); return send(res, 200, { ok: true }) }
             if (req.method === 'GET' && p === '/api/snapshot') return send(res, 200, controller.snapshot())
             if (req.method === 'GET' && p === '/api/meta') {
                 return send(res, 200, {
@@ -177,7 +184,12 @@ export function startServer({ port, controller, store }) {
         wss.handleUpgrade(req, socket, head, ws => wss.emit('connection', ws))
     })
     const broadcast = msg => {
-        const data = JSON.stringify(msg)
+        let data
+        try { data = JSON.stringify(msg) } catch (err) {
+            // Never let a UI update take the daemon down
+            log.error(`Could not send ${msg?.type} update to the UI: ${err.message}`)
+            return
+        }
         for (const c of wss.clients) if (c.readyState === 1) c.send(data)
     }
     wss.on('connection', ws => ws.send(JSON.stringify({ type: 'status', data: controller.status() })))
@@ -190,6 +202,11 @@ export function startServer({ port, controller, store }) {
     lutron.on('change', () => {
         clearTimeout(lutronTimer)
         lutronTimer = setTimeout(() => broadcast({ type: 'lutron', data: lutron.list() }), 200)
+    })
+    let haTimer
+    ha.on('change', () => {
+        clearTimeout(haTimer)
+        haTimer = setTimeout(() => broadcast({ type: 'ha', data: ha.list() }), 200)
     })
     log.subscribe(entry => broadcast({ type: 'log', data: entry }))
 

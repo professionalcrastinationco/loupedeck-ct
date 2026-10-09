@@ -29,6 +29,9 @@ export class Lutron extends EventEmitter {
         this.state = 'disabled'
         this.zones = new Map()   // id -> { id, name, area, type, level, fanSpeed }
         this.scenes = new Map()  // id -> { id, name }
+        // Per-zone runtime bookkeeping (timers, in-flight sends). Kept OUT of
+        // the zone objects so list() stays plain, JSON-serializable data.
+        this.rt = new Map()      // id -> { holdUntil, settleTimer, sending, dirty }
         this.client = null
         this.backoff = 2000
     }
@@ -123,7 +126,7 @@ export class Lutron extends EventEmitter {
     applyStatus(s) {
         const z = this.zones.get(idOf(s?.Zone?.href))
         if (!z) return
-        if (Date.now() < (z.holdUntil ?? 0)) return // our own command is still settling
+        if (Date.now() < this.runtime(z.id).holdUntil) return // our own command is still settling
         if (typeof s.Level === 'number') z.level = s.Level
         if (s.SwitchedLevel) z.level = s.SwitchedLevel === 'On' ? 100 : 0
         if (s.FanSpeed) z.fanSpeed = s.FanSpeed
@@ -136,6 +139,8 @@ export class Lutron extends EventEmitter {
         clearInterval(this.pingTimer)
         try { this.client?.close() } catch { /* ignore */ }
         this.client = null
+        for (const r of this.rt.values()) clearTimeout(r.settleTimer)
+        this.rt.clear()
         this.zones.clear()
         this.scenes.clear()
         this.backoff = 2000
@@ -158,18 +163,26 @@ export class Lutron extends EventEmitter {
             state: this.state,
             host: this.host(),
             pairing: this.pairing ?? null,
-            zones: [...this.zones.values()].sort((a, b) => `${a.area} ${a.name}`.localeCompare(`${b.area} ${b.name}`)),
+            zones: [...this.zones.values()].map(z => ({ id: z.id, name: z.name, area: z.area, type: z.type, category: z.category, level: z.level, fanSpeed: z.fanSpeed })).sort((a, b) => `${a.area} ${a.name}`.localeCompare(`${b.area} ${b.name}`)),
             scenes: [...this.scenes.values()],
         }
     }
 
     zone(id) { return this.zones.get(String(id)) }
 
+    runtime(id) {
+        let r = this.rt.get(String(id))
+        if (!r) { r = { holdUntil: 0, settleTimer: null, sending: null, dirty: false }; this.rt.set(String(id), r) }
+        return r
+    }
+
     async command(url, Command) {
         if (this.state !== 'connected') throw new Error(`Lutron bridge is ${this.state}`)
         const r = await withTimeout(this.client.request('CreateRequest', url, { Command }), REQUEST_TIMEOUT, 'Lutron command')
-        const code = r?.Header?.StatusCode
-        if (code && !String(code).startsWith('2')) throw new Error(`Lutron: ${code} ${r?.Body?.Message ?? ''}`)
+        // lutron-leap parses StatusCode into a ResponseStatus object ({code, message})
+        const st = r?.Header?.StatusCode
+        const ok = !st || (typeof st.isSuccessful === 'function' ? st.isSuccessful() : /^2/.test(String(st)))
+        if (!ok) throw new Error(`Lutron: ${st.code ?? ''} ${st.message ?? st} ${r?.Body?.Message ?? ''}`.trim())
     }
 
     setLevel(id, level) {
@@ -178,33 +191,35 @@ export class Lutron extends EventEmitter {
         level = Math.round(Math.max(0, Math.min(100, level)))
         // Our requested level becomes the truth until the bridge settles
         z.level = level
-        z.holdUntil = Date.now() + HOLD_REPORTS_MS
+        const rt = this.runtime(id)
+        rt.holdUntil = Date.now() + HOLD_REPORTS_MS
         this.emit('change')
-        clearTimeout(z.settleTimer)
-        z.settleTimer = setTimeout(() => this.refreshZone(id), HOLD_REPORTS_MS + 100)
+        clearTimeout(rt.settleTimer)
+        rt.settleTimer = setTimeout(() => this.refreshZone(id), HOLD_REPORTS_MS + 100)
         return this.sendLevel(z)
     }
 
     // At most one command in flight per zone; while it's out, only the newest
     // requested level is kept and sent next (a fast spin = a few commands, not 30).
     async sendLevel(z) {
-        if (z.sending) { z.dirty = true; return z.sending }
-        z.sending = (async () => {
+        const rt = this.runtime(z.id)
+        if (rt.sending) { rt.dirty = true; return rt.sending }
+        rt.sending = (async () => {
             try {
                 do {
-                    z.dirty = false
+                    rt.dirty = false
                     await this.command(`/zone/${z.id}/commandprocessor`, { CommandType: 'GoToLevel', Parameter: [{ Type: 'Level', Value: z.level }] })
-                } while (z.dirty)
+                } while (rt.dirty)
             } finally {
-                z.sending = null
+                rt.sending = null
             }
         })()
-        return z.sending
+        return rt.sending
     }
 
     async refreshZone(id) {
         const z = this.zone(id)
-        if (!z || Date.now() < z.holdUntil || this.state !== 'connected') return
+        if (!z || Date.now() < this.runtime(id).holdUntil || this.state !== 'connected') return
         try { this.applyStatus((await this.get(`/zone/${id}/status`)).ZoneStatus) } catch { /* next report fixes it */ }
     }
 

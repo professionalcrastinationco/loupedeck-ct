@@ -14,3 +14,6 @@ testing/test_results/
 # Scratch
 *.tmp.mjs
 *.log
+
+# Session handoff notes (personal)
+HANDOFF.md

@@ -26,6 +26,7 @@ smart-home control, and pages that follow whatever app you're using.
 - [Live displays reference](#live-displays-reference)
 - [Logitech Litra lights](#logitech-litra-lights)
 - [Lutron smart lighting](#lutron-smart-lighting)
+- [Home Assistant](#home-assistant)
 - [How the reliability works](#how-the-reliability-works)
 - [Troubleshooting](#troubleshooting)
 - [Project layout and development](#project-layout-and-development)
@@ -72,6 +73,7 @@ back within about 2 seconds of being force-killed.
 - **Logitech Litra** Glow/Beam lights: on/off, brightness and color temperature.
 - **Lutron** Caseta / RadioRA 3 / HomeWorks QSX: lights, dimmers, shades,
   fans and scenes, with live levels that update when someone uses a wall switch.
+- **Home Assistant**: lights, switches, fans, scripts and scenes, with live state.
 - **Macros.** Keyboard shortcuts, typed text, launching apps and URLs, shell
   commands, HTTP requests, multi-step sequences, and on/off toggles.
 - **Plain JSON config** that hot-reloads if you edit it by hand; the previous
@@ -190,6 +192,7 @@ Every binding is a JSON object with a `type`:
 | `page` | `page`: a page id, or `next` `prev` `back` | `{"type":"page","page":"media"}` |
 | `light` | Litra. `op`: `toggle` `on` `off` `brightness` `temperature`; `step` / `set` | `{"type":"light","op":"brightness","step":0.05}` |
 | `lutron` | `op`: `toggle` `on` `off` `level` `fan` `scene`; `zone`, `scene`, `set`, `step`, `speed` | `{"type":"lutron","op":"level","zone":"5","step":4}` |
+| `ha` | Home Assistant. `op`: `toggle` `on` `off` `level` `run`; `entity`, `set`, `step` | `{"type":"ha","op":"toggle","entity":"light.desk_lamp"}` |
 | `brightness` | Deck screen brightness, `step` or `set` | `{"type":"brightness","step":0.05}` |
 | `haptic` | `pattern` (e.g. `SHORT`, `BUZZ`, `RUMBLE2`) | `{"type":"haptic","pattern":"SHORT"}` |
 | `http` | `method`, `url`, `headers`, `body` | `{"type":"http","method":"POST","url":"http://…"}` |
@@ -218,6 +221,7 @@ Add `"widget": {...}` to a key, knob or button:
 | `mute` | LIVE / MUTED (active = muted) | `target` |
 | `light` | Litra brightness or temperature | `show` |
 | `lutron` | Zone level / ON / OFF | `zone` |
+| `ha` | Home Assistant level / ON / OFF | `entity` |
 | `toggle` | State of a `toggle` action | `id`, `onText`, `offText` |
 | `page` | Current page name | |
 | `command` | First line of a PowerShell command's output (second line = caption) | `command`, `interval` (s) |
@@ -225,6 +229,12 @@ Add `"widget": {...}` to a key, knob or button:
 
 Displays with an on/off state use the binding's `activeColor` while active. On
 round buttons, that color goes to the button's LED.
+
+A key can use any [Phosphor icon](https://phosphoricons.com) instead of an emoji:
+`"phosphor": "lightbulb"` (optional `"phosphorWeight"`: `fill` (default), `regular`,
+`bold`, `light`, `thin`, `duotone`). The icon is tinted to the key's text color. Add
+`"hideValue": true` to drop the display text (e.g. "ON"/"OFF") and let the icon and
+background color show the state; dimmers still show their level bar.
 
 ## Logitech Litra lights
 
@@ -251,6 +261,22 @@ your machine (that folder is git-ignored). Command-line alternative:
 Dimming with a knob is smooth even when you spin it fast. While a light fades,
 the bridge reports in-between levels; the software ignores those for a moment
 and only sends the newest level, so the light doesn't bounce up and down.
+
+## Home Assistant
+
+1. In Home Assistant, open your profile → **Security** → **Long-lived access tokens**
+   and create one (e.g. named "Loupedeck CT").
+2. In the UI, go to **Settings → Home Assistant**, enter your Home Assistant URL
+   (e.g. `http://homeassistant.local:8123`) and the token, and click **Connect**.
+3. Your lights, switches, fans, scripts and scenes appear in the action and
+   live-display editors (choose "Home Assistant").
+
+The URL and token are stored in `backend/data/homeassistant.json` (git-ignored).
+The connection uses Home Assistant's WebSocket API, so keys update the moment
+something changes elsewhere, and it reconnects on its own if Home Assistant
+restarts. Knob dimming uses the same anti-bounce handling as Lutron.
+
+If a light is also on a Lutron bridge, control it through one integration only.
 
 ## How the reliability works
 
@@ -321,9 +347,11 @@ stops other websites from reprogramming your deck.
 Built on [`loupedeck`](https://github.com/foxxyz/loupedeck) (MIT) by foxxyz,
 [`litra`](https://github.com/timrogers/litra) (MIT) by Tim Rogers,
 [`lutron-leap`](https://github.com/thenewwazoo/lutron-leap-js) (GPL-3.0) by Brandon Matthews,
+[`home-assistant-js-websocket`](https://github.com/home-assistant/home-assistant-js-websocket) (Apache-2.0),
+[Phosphor Icons](https://phosphoricons.com) (MIT),
 [`koffi`](https://koffi.dev), [`node-canvas`](https://github.com/Automattic/node-canvas)
 and [Pico CSS](https://picocss.com).
 
-Not affiliated with Loupedeck, Logitech or Lutron.
+Not affiliated with Loupedeck, Logitech, Lutron or Home Assistant.
 
 Licensed under the **GNU GPL v3.0** (see [LICENSE](../LICENSE)).

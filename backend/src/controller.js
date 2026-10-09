@@ -3,14 +3,20 @@
 import { EventEmitter } from 'node:events'
 import { runAction } from './actions.js'
 import { WidgetEngine } from './widgets.js'
-import { drawKey, drawStrip, drawWheel, preloadImages, forgetImages } from './renderer.js'
+import { drawKey, drawStrip, drawWheel, preloadImages, forgetImages, imageRef } from './renderer.js'
 import { KNOB_IDS, KEY_COUNT } from './config.js'
 import { HAPTIC } from './device.js'
 import { getForegroundApp } from './win32.js'
+import fs from 'node:fs'
+import path from 'node:path'
+import { DATA_DIR } from './paths.js'
 import { log } from './log.js'
 import { lutron } from './lutron.js'
+import { ha } from './ha.js'
 
 const LONG_PRESS_MS = 500
+// Remembers the current page so an unexpected restart doesn't jump back to the start page
+const STATE_FILE = path.join(DATA_DIR, 'state.json')
 const TAP_SLOP = 30
 const SWIPE_MIN = 110
 
@@ -63,6 +69,7 @@ export class Controller extends EventEmitter {
         device.on('state', () => this.emitStatus())
         device.on('input', (ev, payload) => this.onInput(ev, payload))
         lutron.on('change', () => this.requestRender())
+        ha.on('change', () => this.requestRender())
         // A dropped frame would otherwise stay stale until its content changes
         device.on('commandFailed', () => { this.signatures.clear(); this.requestRender() })
 
@@ -86,6 +93,9 @@ export class Controller extends EventEmitter {
 
     applyConfig(cfg, initial = false) {
         const ids = cfg.pages.map(p => p.id)
+        if (initial) {
+            try { this.manualPageId = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')).page } catch { /* first run */ }
+        }
         if (!ids.includes(this.manualPageId)) this.manualPageId = ids.includes(cfg.startPage) ? cfg.startPage : ids[0]
         if (this.autoPageId && !ids.includes(this.autoPageId)) this.autoPageId = null
         if (initial || this.brightness === undefined) this.brightness = cfg.brightness ?? 0.8
@@ -97,7 +107,7 @@ export class Controller extends EventEmitter {
 
     async preloadAndRender(force = false) {
         const files = []
-        for (const p of this.pages) for (const k of Object.values(p.keys || {})) if (k?.image) files.push(k.image)
+        for (const p of this.pages) for (const k of Object.values(p.keys || {})) files.push(imageRef(k, this.theme))
         await preloadImages(files)
         if (force) this.signatures.clear()
         this.requestRender()
@@ -158,8 +168,8 @@ export class Controller extends EventEmitter {
 
     onPageChanged() {
         this.pressed.clear()
+        try { fs.writeFileSync(STATE_FILE, JSON.stringify({ page: this.manualPageId })) } catch { /* not critical */ }
         this.requestRender()
-        if (this.config.haptics !== false) this.device.vibrate(HAPTIC.SHORT_LOW)
         this.emit('page', this.page.id)
         this.emitStatus()
     }
@@ -394,7 +404,7 @@ export class Controller extends EventEmitter {
             const def = this.keyDef(i)
             const value = def?.widget ? this.widgets.value(def.widget) : null
             const pressed = this.pressed.has(i)
-            const imgSig = def?.image ? 1 : 0
+            const imgSig = imageRef(def, theme) ? 1 : 0
             if (this.changed(`key:${i}`, { def, value, pressed, theme, imgSig })) {
                 this.device.drawKey(i, (ctx, w, h) => drawKey(ctx, w, h, { def, value, pressed, theme }))
             }

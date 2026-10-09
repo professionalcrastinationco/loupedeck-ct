@@ -37,6 +37,7 @@ const ACTION_FIELDS = {
     scroll: [['amount', 'number', 'Notches per click (negative = down)'], ['horizontal', 'checkbox', 'Horizontal']],
     page: [['page', 'page', 'Go to page']],
     lutron: [['op', 'select:toggle,on,off,level,fan,scene', 'What to do'], ['zone', 'lutronZone', 'Light / shade / fan'], ['scene', 'lutronScene', 'Scene (for "scene")'], ['set', 'number', 'Level 0-100 (for on/level)'], ['step', 'number', 'Step per click (for level, e.g. 5)'], ['speed', 'select:High,MediumHigh,Medium,Low,Off', 'Fan speed (for fan)']],
+    ha: [['op', 'select:toggle,on,off,level,run', 'What to do'], ['entity', 'haEntity', 'Device'], ['set', 'number', 'Brightness 0-100 (for on/level, dimmable lights)'], ['step', 'number', 'Step per click (for level, e.g. 5)']],
     light: [['op', 'select:toggle,on,off,brightness,temperature', 'What to do'], ['step', 'number', 'Step per click (brightness 0.05 = 5%, temperature in K)'], ['set', 'number', 'Or set to (brightness 0-1, temperature 2700-6500)']],
     brightness: [['step', 'number', 'Step'], ['set', 'number', 'Or set to (0.1-1)']],
     haptic: [['pattern', 'select:SHORT,MEDIUM,LONG,LOW,SHORT_LOW,SHORT_LOWER,LOWER,LOWEST,DESCEND_SLOW,DESCEND_MED,DESCEND_FAST,ASCEND_SLOW,ASCEND_MED,ASCEND_FAST,RISE_FALL,BUZZ,RUMBLE1,RUMBLE2,RUMBLE3,RUMBLE4,RUMBLE5', 'Pattern']],
@@ -45,7 +46,7 @@ const ACTION_FIELDS = {
     delay: [['ms', 'number', 'Milliseconds']],
     multi: [['actions', 'json', 'Actions (JSON array, run in order)'], ['delay', 'number', 'Delay between (ms)']],
 }
-const ACTION_LABELS = { none: 'Do nothing', hotkey: 'Keyboard shortcut', hold: 'Hold key(s)', type: 'Type text', open: 'Open URL / file / app', launch: 'Launch program', shell: 'Run command', media: 'Media key', volume: 'Volume', mute: 'Mute', scroll: 'Scroll', page: 'Switch page', light: 'Litra light', lutron: 'Lutron (lights, shades, scenes)', brightness: 'Deck brightness', haptic: 'Vibrate', http: 'HTTP request', toggle: 'Toggle (on/off state)', delay: 'Wait', multi: 'Multiple actions' }
+const ACTION_LABELS = { none: 'Do nothing', hotkey: 'Keyboard shortcut', hold: 'Hold key(s)', type: 'Type text', open: 'Open URL / file / app', launch: 'Launch program', shell: 'Run command', media: 'Media key', volume: 'Volume', mute: 'Mute', scroll: 'Scroll', page: 'Switch page', light: 'Litra light', lutron: 'Lutron (lights, shades, scenes)', ha: 'Home Assistant', brightness: 'Deck brightness', haptic: 'Vibrate', http: 'HTTP request', toggle: 'Toggle (on/off state)', delay: 'Wait', multi: 'Multiple actions' }
 
 const WIDGET_FIELDS = {
     clock: [['format', 'select:12h,24h', 'Format']],
@@ -56,12 +57,13 @@ const WIDGET_FIELDS = {
     mute: [['target', 'select:mic,speakers', 'Device']],
     light: [['show', 'select:brightness,temperature', 'Show']],
     lutron: [['zone', 'lutronZone', 'Light / shade / fan']],
+    ha: [['entity', 'haEntity', 'Device']],
     toggle: [['id', 'text', 'Toggle name'], ['onText', 'text', 'Text when on'], ['offText', 'text', 'Text when off']],
     page: [],
     command: [['command', 'textarea', 'PowerShell command (first line = value, second = caption)'], ['interval', 'number', 'Refresh every (s)']],
     http: [['url', 'text', 'URL'], ['path', 'text', 'JSON path, e.g. data.price'], ['prefix', 'text', 'Prefix'], ['suffix', 'text', 'Suffix'], ['decimals', 'number', 'Decimals'], ['interval', 'number', 'Refresh every (s)']],
 }
-const WIDGET_LABELS = { clock: 'Clock', date: 'Date', cpu: 'CPU usage', memory: 'Memory usage', volume: 'Volume level', mute: 'Mute state (turns red)', light: 'Litra light state', lutron: 'Lutron level / state', toggle: 'Toggle state', page: 'Current page name', command: 'Command output', http: 'Web / JSON value' }
+const WIDGET_LABELS = { clock: 'Clock', date: 'Date', cpu: 'CPU usage', memory: 'Memory usage', volume: 'Volume level', mute: 'Mute state (turns red)', light: 'Litra light state', lutron: 'Lutron level / state', ha: 'Home Assistant state', toggle: 'Toggle state', page: 'Current page name', command: 'Command output', http: 'Web / JSON value' }
 
 let config = null
 let status = null
@@ -72,6 +74,8 @@ let saveTimer = null
 let previewBust = Date.now()
 let icons = []
 let lutronInfo = { state: 'unknown', zones: [], scenes: [] }
+let haInfo = { state: 'unknown', entities: [] }
+const HA_GROUPS = { light: 'Lights', switch: 'Switches', fan: 'Fans', input_boolean: 'Helpers', script: 'Scripts', scene: 'Scenes' }
 
 // ---- API ------------------------------------------------------------------
 
@@ -295,6 +299,12 @@ function fieldInput(obj, [name, type, label, hint], onChange) {
         const items = type === 'lutronZone' ? lutronInfo.zones.map(z => [z.id, `${z.area ? z.area + ' · ' : ''}${z.name} (${z.type})`]) : lutronInfo.scenes.map(s => [s.id, s.name])
         if (!items.length) return h('label', {}, label, h('div', { class: 'hint' }, `Lutron bridge: ${lutronInfo.state}. Nothing to pick yet.`))
         input = h('select', { onchange: e => set(e.target.value) }, h('option', { value: '' }, '— choose —'), items.map(([v, l]) => h('option', { value: v, selected: String(val) === v }, l)))
+    } else if (type === 'haEntity') {
+        if (!haInfo.entities.length) return h('label', {}, label, h('div', { class: 'hint' }, `Home Assistant: ${haInfo.state}. Nothing to pick yet.`))
+        const groups = Object.entries(HA_GROUPS).filter(([d]) => haInfo.entities.some(e => e.domain === d)).map(([d, name]) => h('optgroup', { label: name },
+            haInfo.entities.filter(e => e.domain === d).map(e => h('option', { value: e.id, selected: e.id === val }, e.name))))
+        if (val && !haInfo.entities.some(e => e.id === val)) groups.unshift(h('option', { value: val, selected: true }, `${val} (not found)`))
+        input = h('select', { onchange: e => set(e.target.value) }, h('option', { value: '' }, '— choose —'), groups)
     } else if (type.startsWith('select:')) {
         const opts = type.slice(7).split(',')
         input = h('select', { onchange: e => set(e.target.value) }, opts.map(o => h('option', { value: o, selected: o === val }, o)))
@@ -366,7 +376,9 @@ function appearanceEditor(def, onChange, { image = true } = {}) {
         h('div', { class: 'row' },
             fieldInput(def, ['label', 'text', 'Label'], onChange),
             fieldInput(def, ['icon', 'text', 'Icon (emoji)'], onChange),
+            fieldInput(def, ['phosphor', 'text', 'Phosphor icon', 'Name from phosphoricons.com, e.g. lightbulb'], onChange),
         ),
+        fieldInput(def, ['hideValue', 'checkbox', 'Hide the live display text (icon + color show the state)'], onChange),
         h('div', { class: 'row' },
             colorField(def, 'color', 'Background', onChange),
             colorField(def, 'activeColor', 'Active color', onChange),
@@ -538,7 +550,7 @@ function renderLutron() {
         box.replaceChildren(
             h('p', {}, `Bridge ${L.host}: `, h('strong', {}, L.state), ` · ${L.zones.length} zones, ${L.scenes.length} scenes`),
             h('p', { class: 'hint' }, 'Use the "Lutron" action and live display on any key or knob.'),
-            msg,
+            msg ?? '',
             h('div', { class: 'btn-row' }, h('button', { class: 'outline contrast', onclick: async () => {
                 if (!confirm('Forget this bridge? You will need to pair again to use Lutron controls.')) return
                 await api('POST', '/api/lutron/unpair')
@@ -564,8 +576,34 @@ function renderLutron() {
                 try { await api('POST', '/api/lutron/pair', { host: ip.value.trim() }) } catch (err) { toast(err.message, true) }
             } }, 'Pair'),
         ),
-        msg,
+        msg ?? '',
         h('p', { class: 'hint' }, 'After clicking Pair, give the small button on the back of the bridge a quick tap. Do not hold it: holding it for ~15 seconds factory-resets the bridge.'),
+    )
+}
+
+function renderHa() {
+    const box = $('#haBox')
+    const H = haInfo
+    if (H.url) {
+        box.replaceChildren(
+            h('p', {}, `${H.url}: `, h('strong', {}, H.state), ` · ${H.entities.length} devices`),
+            h('p', { class: 'hint' }, 'Use the "Home Assistant" action and live display on any key or knob.'),
+            h('div', { class: 'btn-row' }, h('button', { class: 'outline contrast', onclick: async () => {
+                if (!confirm('Forget Home Assistant? Keys using it will stop working until you connect again.')) return
+                await api('POST', '/api/ha/forget')
+            } }, 'Disconnect')),
+        )
+        return
+    }
+    const url = h('input', { placeholder: 'http://homeassistant.local:8123' })
+    const token = h('input', { type: 'password', placeholder: 'Long-lived access token', autocomplete: 'off' })
+    box.replaceChildren(
+        h('p', { class: 'muted' }, 'Control Home Assistant lights, switches, fans, scripts and scenes. Create a token in Home Assistant under your profile → Security → Long-lived access tokens.'),
+        h('div', { class: 'row' }, url, token,
+            h('button', { class: 'shrink', onclick: async () => {
+                try { await api('POST', '/api/ha/settings', { url: url.value, token: token.value }); token.value = '' } catch (err) { toast(err.message, true) }
+            } }, 'Connect')),
+        h('p', { class: 'hint' }, 'The token is stored in backend/data/homeassistant.json on this PC only.'),
     )
 }
 
@@ -573,7 +611,7 @@ function renderJson() { $('#jsonText').value = JSON.stringify(config, null, 2) }
 
 function renderAll() {
     if (!config.pages.some(p => p.id === currentPageId)) currentPageId = config.pages[0].id
-    renderPages(); renderDevice(); renderEditor(); renderApps(); renderSettings(); renderLutron(); renderJson()
+    renderPages(); renderDevice(); renderEditor(); renderApps(); renderSettings(); renderLutron(); renderHa(); renderJson()
 }
 
 async function loadIcons() { icons = (await api('GET', '/api/icons')).icons }
@@ -629,6 +667,7 @@ function connectWs() {
         if (msg.type === 'status') setStatus(msg.data)
         else if (msg.type === 'input') onDeviceInput(msg.data)
         else if (msg.type === 'lutron') { lutronInfo = msg.data; renderLutron() }
+        else if (msg.type === 'ha') { haInfo = msg.data; renderHa() }
         else if (msg.type === 'log') appendLog($('#daemonLog'), `${new Date(msg.data.ts).toLocaleTimeString()} [${msg.data.level}] ${msg.data.msg}`)
         else if (msg.type === 'page') {
             if (status) status.page = msg.data
@@ -656,6 +695,7 @@ async function init() {
     setStatus(s)
     await loadIcons()
     lutronInfo = await api('GET', '/api/lutron').catch(() => lutronInfo)
+    haInfo = await api('GET', '/api/ha').catch(() => haInfo)
     renderAll()
     connectWs()
 

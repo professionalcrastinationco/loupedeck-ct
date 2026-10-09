@@ -13,7 +13,9 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@phosphor-icons/core": "^2.1.1",
     "canvas": "^3.2.3",
+    "home-assistant-js-websocket": "9.7.0",
     "koffi": "^3.3.2",
     "litra": "^4.5.1",
     "loupedeck": "^7.0.3",

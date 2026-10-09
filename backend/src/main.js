@@ -5,6 +5,7 @@ import { Controller } from './controller.js'
 import { startServer } from './server.js'
 import { log } from './log.js'
 import { lutron } from './lutron.js'
+import { ha } from './ha.js'
 
 export const EXIT_ALREADY_RUNNING = 3
 const PORT = Number(process.env.LD_PORT || 20010)
@@ -33,6 +34,7 @@ try {
 log.info(`Loupedeck CT daemon started (pid ${process.pid})`)
 device.start()
 lutron.start()
+ha.start()
 
 let stopping = false
 async function shutdown(signal) {

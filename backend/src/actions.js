@@ -7,6 +7,7 @@ import { log } from './log.js'
 import { HAPTIC } from './device.js'
 import { lightAction } from './light.js'
 import { lutron } from './lutron.js'
+import { ha } from './ha.js'
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
@@ -88,6 +89,12 @@ export const ACTIONS = {
     // Lutron lights / shades / fans / scenes
     lutron: async (a, ctx) => {
         await lutron.action(a, ctx.delta ?? 1)
+        ctx.controller?.requestRender()
+    },
+
+    // Home Assistant lights / switches / fans / scripts / scenes
+    ha: async (a, ctx) => {
+        await ha.action(a, ctx.delta ?? 1)
         ctx.controller?.requestRender()
     },
 
